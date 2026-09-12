@@ -4,6 +4,36 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  /* --------------------------------------------------------------------------
+     0. Initial Page Preloader Animation Lifecycle
+     -------------------------------------------------------------------------- */
+  const preloader = document.getElementById('pagePreloader');
+  if (preloader) {
+    const minPreloadTime = 1900; // Allows letters and line to animate to completion
+    const preloaderStartTime = performance.now();
+
+    const hidePreloader = () => {
+      if (preloader.classList.contains('is-loaded')) return;
+      preloader.classList.add('is-loaded');
+      setTimeout(() => {
+        document.body.classList.remove('is-loading');
+      }, 700);
+    };
+
+    if (document.readyState === 'complete') {
+      setTimeout(hidePreloader, minPreloadTime);
+    } else {
+      window.addEventListener('load', () => {
+        const elapsed = performance.now() - preloaderStartTime;
+        const delay = Math.max(0, minPreloadTime - elapsed);
+        setTimeout(hidePreloader, delay);
+      });
+    }
+
+    // Safety fallback timeout
+    setTimeout(hidePreloader, 3500);
+  }
+
   // Navigation Elements
   const floatingNavbar = document.getElementById('floatingNavbar');
   const navPillToggle = document.getElementById('navPillToggle');

@@ -76,6 +76,180 @@ h6 {
   font-weight: 500;
 }
 
+/* ==========================================================================
+   Page Preloader Styles
+   Visabuzz letter reveal animation and color-filling progress line
+   ========================================================================== */
+body.is-loading {
+  overflow: hidden !important;
+}
+
+.page-preloader {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0b110e;
+  background-image:
+    radial-gradient(ellipse at 50% 46%, rgba(25, 56, 34, 0.5) 0%, rgba(11, 17, 14, 0.98) 70%),
+    linear-gradient(180deg, rgba(8, 13, 10, 0.9) 0%, rgba(13, 20, 16, 0.95) 100%);
+  z-index: 9999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, visibility;
+}
+
+.page-preloader.is-loaded {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.preloader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.6s ease;
+  will-change: transform, opacity;
+}
+
+.page-preloader.is-loaded .preloader-inner {
+  transform: translateY(-24px) scale(0.96);
+  opacity: 0;
+}
+
+/* Brand Group */
+.preloader-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.preloader-icon {
+  color: #4ade80;
+  filter: drop-shadow(0 0 16px rgba(74, 222, 128, 0.65));
+  opacity: 0;
+  transform: scale(0.6) rotate(-15deg);
+  animation: preloaderIconPop 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
+}
+
+@keyframes preloaderIconPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) rotate(-15deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.preloader-title {
+  display: inline-flex;
+  font-family: var(--font-heading);
+  font-size: clamp(2.8rem, 6vw, 4.4rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  user-select: none;
+}
+
+/* Individual letter reveal */
+.preloader-title .char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(22px) scale(0.85);
+  filter: blur(8px);
+  animation: charSlideUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(0.15s + var(--i) * 0.075s);
+  background: linear-gradient(180deg, #ffffff 40%, rgba(255, 255, 255, 0.75) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes charSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.85);
+    filter: blur(8px);
+  }
+  60% {
+    filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+
+/* Loading Line Track & Filling Color Line */
+.preloader-line-track {
+  width: 220px;
+  max-width: 65vw;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.preloader-line-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #10b981 0%, #22c55e 50%, #4ade80 100%);
+  box-shadow: 0 0 14px rgba(74, 222, 128, 0.8), 0 0 4px #4ade80;
+  animation: fillPreloaderLine 1.5s cubic-bezier(0.25, 1, 0.5, 1) 0.35s forwards;
+}
+
+@keyframes fillPreloaderLine {
+  0% {
+    width: 0%;
+  }
+  30% {
+    width: 40%;
+  }
+  65% {
+    width: 80%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .preloader-brand {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .preloader-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .preloader-title {
+    font-size: 2.35rem;
+  }
+
+  .preloader-line-track {
+    width: 170px;
+  }
+}
+
 /* --- Hero Section & Background --- */
 .hero-section {
   position: relative;

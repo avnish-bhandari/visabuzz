@@ -30,7 +30,31 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 
-<body>
+<body class="is-loading">
+
+  <!-- Initial Page Preloader -->
+  <aside class="page-preloader" id="pagePreloader" aria-label="Loading Visabuzz">
+    <div class="preloader-inner">
+      <div class="preloader-brand">
+        <svg class="preloader-icon" width="34" height="34" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L2 22l10-4 10 4L12 2z" />
+        </svg>
+        <div class="preloader-title" aria-label="Visabuzz">
+          <span class="char" style="--i: 0">V</span>
+          <span class="char" style="--i: 1">i</span>
+          <span class="char" style="--i: 2">s</span>
+          <span class="char" style="--i: 3">a</span>
+          <span class="char" style="--i: 4">b</span>
+          <span class="char" style="--i: 5">u</span>
+          <span class="char" style="--i: 6">z</span>
+          <span class="char" style="--i: 7">z</span>
+        </div>
+      </div>
+      <div class="preloader-line-track">
+        <div class="preloader-line-fill" id="preloaderBarFill"></div>
+      </div>
+    </div>
+  </aside>
 
   <!-- Hero Section with Background -->
   <section class="hero-section" id="hero">
