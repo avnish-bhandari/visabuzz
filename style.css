@@ -2439,7 +2439,7 @@ body.menu-open .floating-navbar {
 .experience-swiper .swiper-wrapper {
   display: flex;
   align-items: flex-end;
-  gap: 0;
+  gap: 15px;
   transition-timing-function: linear !important;
   will-change: transform;
 }
