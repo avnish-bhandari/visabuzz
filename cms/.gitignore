@@ -1,0 +1,9 @@
+# Ignore environment file — never commit DB credentials
+.env
+
+# Ignore uploaded files
+uploads/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
