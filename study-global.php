@@ -287,9 +287,9 @@ $pageDesc  = gs($s, 'seo', 'description', "Complete guide to studying in {$dest[
             ?>
             <h1 class="sg-hero-title"><?= $formattedTitle ?></h1>
 
-            <p class="sg-hero-subtitle">
+            <div class="sg-hero-subtitle">
               <?= safe_html(gs($s, 'hero', 'subtitle', 'Empowering students with world-class education, innovation, and global opportunities.')) ?>
-            </p>
+            </div>
 
             <div class="sg-hero-ctas">
               <a href="<?= esc(gs($s, 'hero', 'cta1_url', '#apply')) ?>" class="sg-btn-primary">
@@ -415,9 +415,9 @@ $pageDesc  = gs($s, 'seo', 'description', "Complete guide to studying in {$dest[
           <h2 class="sg-why-title">
             <?= esc(gs($s, 'features', 'title', 'One of the largest, most diverse universities in the World')) ?>
           </h2>
-          <p class="sg-why-subtitle">
+          <div class="sg-why-subtitle">
             <?= safe_html(gs($s, 'features', 'subtitle', 'Home to students from every corner of the globe, fostering diversity, inclusion, and world-class academic excellence.')) ?>
-          </p>
+          </div>
         </div>
 
         <div class="sg-features-grid">

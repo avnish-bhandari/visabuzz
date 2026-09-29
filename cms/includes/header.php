@@ -37,7 +37,7 @@ $navSections = [
         ['slug' => 'home',                'label' => 'Home Page',           'svg' => 'home',        'href' => 'pages/home.php'],
         ['slug' => 'destinations',        'label' => 'Destinations',        'svg' => 'plane',       'href' => 'pages/destinations.php'],
         ['slug' => 'destination-content', 'label' => 'Study Pages Content', 'svg' => 'graduation',  'href' => 'pages/destination-content.php'],
-        ['slug' => 'services',            'label' => 'Visa Services',       'svg' => 'briefcase',   'href' => 'pages/services.php'],
+        ['slug' => 'services',            'label' => 'Visa Services & Pathways', 'svg' => 'briefcase', 'href' => 'pages/services.php'],
         ['slug' => 'testimonials',        'label' => 'Testimonials',        'svg' => 'star',        'href' => 'pages/testimonials.php'],
     ],
     'Site Links & SEO' => [
@@ -93,14 +93,27 @@ function cms_icon(string $name): string {
   <meta name="robots" content="noindex, nofollow" />
   <meta name="csrf-token" content="<?= htmlspecialchars(cms_csrf_token()) ?>" />
   <title><?= htmlspecialchars($pageTitle) ?> — <?= htmlspecialchars($appName) ?></title>
-  <link rel="stylesheet" href="<?= $cmsRoot ?>assets/cms.css" />
+  <link rel="stylesheet" href="<?= $cmsRoot ?>assets/cms.css?v=<?= @filemtime(dirname(__DIR__) . '/assets/cms.css') ?: time() ?>" />
   <script>
     window.CMS_ROOT = '<?= $cmsRoot ?>';
     window.CMS_API_SAVE = '<?= $cmsRoot ?>api/save.php';
     window.CMS_SITE_ROOT = '<?= $cmsRoot ?>../';
+    window.CMS_PAGE_SLUG = '<?= $pageSlug ?? "home" ?>';
+    window.CMS_PAGE_FOLDER = '<?= ($pageSlug ?? "") === "home" ? "home page" : (($pageSlug ?? "") === "destination-content" ? "destinations" : ($pageSlug ?? "general")) ?>';
     if (localStorage.getItem('cms_sidebar_collapsed') === '1' && window.innerWidth > 1024) {
       document.documentElement.classList.add('sidebar-collapsed');
     }
+    window.cmsScrollTabs = function(wrapOrId, dir) {
+      var wrap = typeof wrapOrId === 'string' ? document.getElementById(wrapOrId) : wrapOrId;
+      if (!wrap && wrapOrId && wrapOrId.closest) {
+        var outer = wrapOrId.closest('.dest-tabs-bar-outer') || wrapOrId.parentElement;
+        wrap = outer ? outer.querySelector('.dest-tabs-wrap') : null;
+      }
+      if (!wrap) wrap = document.querySelector('.dest-tabs-wrap');
+      if (!wrap) return;
+      var step = (dir || 1) * 280;
+      wrap.scrollLeft += step;
+    };
   </script>
 </head>
 <body>

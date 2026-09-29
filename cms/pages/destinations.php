@@ -36,6 +36,24 @@ $countryMeta = [
 require_once dirname(__DIR__) . '/includes/header.php';
 ?>
 
+<!-- Notice: Homepage 3D Destinations Showcase -->
+<div class="cms-card" style="margin-bottom:20px;background:linear-gradient(135deg,#0a192f,#0f2d4a);border:1px solid #1e3a8a;color:#fff;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:4px 6px;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:42px;height:42px;border-radius:10px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);display:flex;align-items:center;justify-content:center;color:#4ade80;flex-shrink:0;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+      </div>
+      <div>
+        <div style="font-weight:600;font-size:14px;color:#fff;">Looking to edit the Homepage 3D Destinations Showcase?</div>
+        <div style="font-size:12.5px;color:#94a3b8;margin-top:2px;">Customize &ldquo;Explore The World&rsquo;s Leading Study &amp; Visa Hubs&rdquo; &mdash; Canada, UK, Germany, and Australia 3D perspective flip cards with fullscreen crossfading photos.</div>
+      </div>
+    </div>
+    <a href="home.php#sec-dest_showcase" class="cms-btn cms-btn-primary" style="font-size:12.5px;padding:8px 16px;gap:6px;white-space:nowrap;">
+      <span>Edit Homepage 3D Showcase &rarr;</span>
+    </a>
+  </div>
+</div>
+
 <div class="cms-card">
   <div class="cms-card-header">
     <div>

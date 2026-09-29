@@ -20,6 +20,6 @@ if (typeof ClassicEditor === 'undefined') {
 </script>
 
 <!-- CMS JS -->
-<script src="<?= $cmsRoot ?>assets/cms.js"></script>
+<script src="<?= $cmsRoot ?>assets/cms.js?v=<?= @filemtime(dirname(__DIR__) . '/assets/cms.js') ?: time() ?>"></script>
 </body>
 </html>

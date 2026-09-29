@@ -237,7 +237,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const destCardItems = document.querySelectorAll('.dest-card-item');
   const destMarqueeTrack = document.getElementById('destMarqueeTrack');
 
-  const countryNames = ['Canada', 'United Kingdom', 'Germany', 'Australia'];
+  const cardCountryNames = Array.from(destCardItems).map(el => el.getAttribute('data-country-name')).filter(Boolean);
+  const countryNames = cardCountryNames.length > 0 ? cardCountryNames : ['Canada', 'United Kingdom', 'Germany', 'Australia'];
   let currentCountryIndex = -1;
 
   // Render marquee for active country
@@ -250,14 +251,26 @@ document.addEventListener('DOMContentLoaded', () => {
     destMarqueeTrack.innerHTML = html;
   };
 
-  renderMarquee(countryNames[0]);
-  currentCountryIndex = 0;
+  if (countryNames.length > 0) {
+    renderMarquee(countryNames[0]);
+    currentCountryIndex = 0;
+  }
 
-  let targetScrollPos = 0; // Target destination position (0 to 3)
-  let smoothScrollPos = 0; // Lerp interpolated destination position
+  const totalDestCards = destCardItems.length;
+  const maxDestIndex = Math.max(0, totalDestCards - 1);
+
+  let targetScrollPos = 0;
+  let smoothScrollPos = 0;
   let isTicking = false;
 
   const updateDestinationVisuals = () => {
+    if (totalDestCards <= 0) return;
+    if (totalDestCards === 1) {
+      destCardItems[0]?.classList.add('is-active', 'is-interactive');
+      destBgImages[0]?.classList.add('is-active');
+      return;
+    }
+
     // Silky smooth lerp interpolation with damping factor
     const diff = targetScrollPos - smoothScrollPos;
     if (Math.abs(diff) < 0.0004) {
@@ -266,14 +279,14 @@ document.addEventListener('DOMContentLoaded', () => {
       smoothScrollPos += diff * 0.09;
     }
 
-    // Clamp smoothScrollPos in [0, 3]
-    const clampedPos = Math.max(0, Math.min(3, smoothScrollPos));
+    // Clamp smoothScrollPos in [0, maxDestIndex]
+    const clampedPos = Math.max(0, Math.min(maxDestIndex, smoothScrollPos));
 
     // Determine current base index and fractional progress between destinations
     let baseIndex = Math.floor(clampedPos);
     let frac = clampedPos - baseIndex;
-    if (baseIndex >= 3) {
-      baseIndex = 2;
+    if (baseIndex >= maxDestIndex) {
+      baseIndex = maxDestIndex - 1;
       frac = 1.0;
     }
 
@@ -285,8 +298,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let cardBrightness = 1;
     let isFullyLanded = false;
 
-    if (clampedPos >= 3) {
-      visibleCardIndex = 3;
+    if (clampedPos >= maxDestIndex) {
+      visibleCardIndex = maxDestIndex;
       cardRotateX = 0;
       cardTranslateY = 0;
       cardScale = 1;
@@ -348,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 3. Update Marquee for the active country
-    if (activeBgIndex !== currentCountryIndex) {
+    if (activeBgIndex !== currentCountryIndex && countryNames[activeBgIndex]) {
       currentCountryIndex = activeBgIndex;
       renderMarquee(countryNames[activeBgIndex]);
     }
@@ -372,8 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Calculate scroll progress from 0 to 1
     const progress = Math.max(0, Math.min(1, -rect.top / scrollableDistance));
 
-    // Map progress smoothly across the 4 destinations (0.0 to 3.0)
-    targetScrollPos = progress * 3;
+    // Map progress smoothly across the destinations (0.0 to maxDestIndex)
+    targetScrollPos = progress * maxDestIndex;
 
     if (!isTicking) {
       isTicking = true;

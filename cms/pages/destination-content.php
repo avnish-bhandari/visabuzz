@@ -64,6 +64,12 @@ function cms_img_src(string $url): string {
     if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://') || str_starts_with($url, 'data:') || str_starts_with($url, '/')) {
         return $url;
     }
+    if (str_starts_with($url, 'cms/')) {
+        return '../' . substr($url, 4);
+    }
+    if (str_starts_with($url, 'uploads/')) {
+        return '../' . $url;
+    }
     return '../../' . ltrim($url, '/');
 }
 
@@ -75,19 +81,19 @@ function render_cms_image_upload(string $label, int $destId, string $section, st
       <label class="cms-label"><?= htmlspecialchars($label) ?></label>
       <div class="cms-image-upload-wrap">
         <div class="cms-image-preview-box" id="box_<?= $fieldId ?>">
-          <img id="prev_<?= $fieldId ?>" src="<?= htmlspecialchars($previewSrc) ?>" alt="Preview" style="<?= $hasImg ? 'display:block;' : 'display:none;' ?>" />
-          <div class="cms-upload-empty" style="<?= !$hasImg ? 'display:block;' : 'display:none;' ?>">No Image</div>
+          <img id="prev_<?= $fieldId ?>" src="<?= htmlspecialchars($previewSrc) ?>" alt="Preview" class="cms-preview-img <?= $hasImg ? 'is-visible' : 'is-hidden' ?>" />
+          <div class="cms-upload-empty <?= !$hasImg ? 'is-visible' : 'is-hidden' ?>">No Image</div>
         </div>
-        <div class="cms-upload-content" style="flex:1;">
+        <div class="cms-upload-content">
           <div class="cms-upload-actions">
             <label class="cms-upload-btn">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               <span><?= $hasImg ? 'Change Image' : 'Upload Image' ?></span>
-              <input type="file" accept="image/*" style="display:none;" onchange="cmsUploadFile(this, 'hid_<?= $fieldId ?>', 'prev_<?= $fieldId ?>')" />
+              <input type="file" accept="image/*" class="cms-file-input-hidden" onchange="cmsUploadFile(this, 'hid_<?= $fieldId ?>', 'prev_<?= $fieldId ?>')" />
             </label>
             <button type="button" class="cms-remove-img-btn" onclick="cmsRemoveImage('hid_<?= $fieldId ?>', 'prev_<?= $fieldId ?>')">Remove</button>
           </div>
-          <div style="font-size:12px; color:var(--text-muted); margin-top:6px;"><?= htmlspecialchars($helpText) ?> (JPG, PNG, WebP, SVG)</div>
+          <div class="cms-upload-help"><?= htmlspecialchars($helpText) ?> (JPG, PNG, WebP, SVG)</div>
         </div>
         <input type="hidden" id="hid_<?= $fieldId ?>" class="cms-input" data-dest="<?= $destId ?>" data-section="<?= $section ?>" data-field="<?= $field ?>" value="<?= htmlspecialchars($currentVal) ?>" />
       </div>
@@ -106,6 +112,42 @@ $countryCodes = [
     'europe'  => 'EU',
     'italy'   => 'IT',
 ];
+
+function cms_dest_flag_svg(string $slug, int $w = 22, int $h = 15): string {
+    $s = strtolower(trim($slug));
+    switch ($s) {
+        case 'uk':
+        case 'gb':
+            return '<svg viewBox="0 0 60 40" width="' . $w . '" height="' . $h . '" class="dest-flag-svg" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#fff" stroke-width="8"/><path d="M0,0 L60,40 M60,0 L0,40" stroke="#C8102E" stroke-width="4"/><path d="M30,0 v40 M0,20 h60" stroke="#fff" stroke-width="12"/><path d="M30,0 v40 M0,20 h60" stroke="#C8102E" stroke-width="7"/></svg>';
+        case 'usa':
+        case 'us':
+            return '<svg viewBox="0 0 60 40" width="' . $w . '" height="' . $h . '" class="dest-flag-svg" aria-hidden="true"><rect width="60" height="40" fill="#fff"/><path d="M0,3.1h60 M0,9.2h60 M0,15.4h60 M0,21.5h60 M0,27.7h60 M0,33.8h60 M0,40h60" stroke="#B22234" stroke-width="3.1"/><rect width="26" height="21.5" fill="#3C3B6E"/><circle cx="5.5" cy="4.5" r="1.1" fill="#fff"/><circle cx="13" cy="4.5" r="1.1" fill="#fff"/><circle cx="20.5" cy="4.5" r="1.1" fill="#fff"/><circle cx="9.25" cy="9.5" r="1.1" fill="#fff"/><circle cx="16.75" cy="9.5" r="1.1" fill="#fff"/><circle cx="5.5" cy="14.5" r="1.1" fill="#fff"/><circle cx="13" cy="14.5" r="1.1" fill="#fff"/><circle cx="20.5" cy="14.5" r="1.1" fill="#fff"/></svg>';
+        case 'ireland':
+        case 'ie':
+            return '<svg viewBox="0 0 60 40" width="' . $w . '" height="' . $h . '" class="dest-flag-svg" aria-hidden="true"><rect width="20" height="40" fill="#169B62"/><rect x="20" width="20" height="40" fill="#ffffff"/><rect x="40" width="20" height="40" fill="#FF883E"/></svg>';
+        case 'canada':
+        case 'ca':
+            return '<svg viewBox="0 0 60 40" width="' . $w . '" height="' . $h . '" class="dest-flag-svg" aria-hidden="true"><rect width="15" height="40" fill="#D80027"/><rect x="15" width="30" height="40" fill="#ffffff"/><rect x="45" width="15" height="40" fill="#D80027"/><path d="M30 10l1.4 4.2 3.6-1.4-1.2 4.2 4 1-3.6 2.8 1.8 4.2-4.8-1.8v3.8h-2.4V27l-4.8 1.8 1.8-4.2-3.6-2.8 4-1-1.2-4.2 3.6 1.4z" fill="#D80027"/></svg>';
+        case 'germany':
+        case 'de':
+            return '<svg viewBox="0 0 60 40" width="' . $w . '" height="' . $h . '" class="dest-flag-svg" aria-hidden="true"><rect width="60" height="13.33" fill="#000000"/><rect y="13.33" width="60" height="13.33" fill="#DD0000"/><rect y="26.66" width="60" height="13.34" fill="#FFCE00"/></svg>';
+        case 'dubai':
+        case 'ae':
+            return '<svg viewBox="0 0 60 40" width="' . $w . '" height="' . $h . '" class="dest-flag-svg" aria-hidden="true"><rect width="60" height="13.33" fill="#00732F"/><rect y="13.33" width="60" height="13.33" fill="#ffffff"/><rect y="26.66" width="60" height="13.34" fill="#000000"/><rect width="17" height="40" fill="#FF0000"/></svg>';
+        case 'france':
+        case 'fr':
+            return '<svg viewBox="0 0 60 40" width="' . $w . '" height="' . $h . '" class="dest-flag-svg" aria-hidden="true"><rect width="20" height="40" fill="#002654"/><rect x="20" width="20" height="40" fill="#ffffff"/><rect x="40" width="20" height="40" fill="#CE1126"/></svg>';
+        case 'europe':
+        case 'eu':
+            return '<svg viewBox="0 0 60 40" width="' . $w . '" height="' . $h . '" class="dest-flag-svg" aria-hidden="true"><rect width="60" height="40" fill="#003399"/><circle cx="30" cy="8" r="1.4" fill="#FFCC00"/><circle cx="36" cy="9.6" r="1.4" fill="#FFCC00"/><circle cx="40.4" cy="14" r="1.4" fill="#FFCC00"/><circle cx="42" cy="20" r="1.4" fill="#FFCC00"/><circle cx="40.4" cy="26" r="1.4" fill="#FFCC00"/><circle cx="36" cy="30.4" r="1.4" fill="#FFCC00"/><circle cx="30" cy="32" r="1.4" fill="#FFCC00"/><circle cx="24" cy="30.4" r="1.4" fill="#FFCC00"/><circle cx="19.6" cy="26" r="1.4" fill="#FFCC00"/><circle cx="18" cy="20" r="1.4" fill="#FFCC00"/><circle cx="19.6" cy="14" r="1.4" fill="#FFCC00"/><circle cx="24" cy="9.6" r="1.4" fill="#FFCC00"/></svg>';
+        case 'italy':
+        case 'it':
+            return '<svg viewBox="0 0 60 40" width="' . $w . '" height="' . $h . '" class="dest-flag-svg" aria-hidden="true"><rect width="20" height="40" fill="#009246"/><rect x="20" width="20" height="40" fill="#ffffff"/><rect x="40" width="20" height="40" fill="#CE2B37"/></svg>';
+        default:
+            $code = strtoupper(substr($slug, 0, 2));
+            return '<span class="dest-flag-code">' . htmlspecialchars($code) . '</span>';
+    }
+}
 
 $destFactMap = [
     'uk' => [
@@ -174,46 +216,135 @@ $defaultFacts = $destFactMap[$activeSlug] ?? [
 require_once dirname(__DIR__) . '/includes/header.php';
 ?>
 
-<!-- Destination Selector Pills -->
-<div class="dest-country-pills">
-  <?php foreach ($destinations as $d):
-      $activeClass = ($d['id'] == $activeId) ? ' active' : '';
-      $slugKey     = strtolower($d['country_slug']);
-      $cCode       = $countryCodes[$slugKey] ?? strtoupper(substr($slugKey, 0, 2));
-  ?>
-  <a href="destination-content.php?id=<?= $d['id'] ?>" class="dest-pill<?= $activeClass ?>">
-    <span class="dest-pill-code"><?= $cCode ?></span>
-    <span><?= htmlspecialchars($d['country_name']) ?></span>
-  </a>
-  <?php endforeach; ?>
+<!-- Destination Switcher Panel -->
+<div class="dest-switcher-card">
+  <div class="dest-switcher-top">
+    <div class="dest-switcher-meta">
+      <div class="dest-switcher-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>Study Destination</span>
+      </div>
+      <span class="dest-count-badge"><?= count($destinations) ?> Destinations</span>
+    </div>
+    <div class="dest-switcher-quick-links">
+      <a href="home.php#sec-dest_showcase" class="dest-manage-link" title="Edit the 3D rotating destination showcase cards on the homepage">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+        <span>Homepage 3D Showcase</span>
+      </a>
+      <a href="destinations.php" class="dest-manage-link" title="Manage all destinations, add countries, or change routes">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span>Manage Destinations</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Country Switcher Pills Rail -->
+  <div class="dest-country-pills-rail">
+    <div class="dest-country-pills">
+      <?php foreach ($destinations as $d):
+          $isActive    = ($d['id'] == $activeId);
+          $activeClass = $isActive ? ' active' : '';
+          $slugKey     = strtolower($d['country_slug']);
+          $cleanName   = preg_replace('/^Study in\s+(the\s+)?/i', '', $d['country_name']);
+          if (empty($cleanName)) {
+              $cleanName = $d['country_name'];
+          }
+      ?>
+      <a href="destination-content.php?id=<?= $d['id'] ?>"
+         class="dest-pill<?= $activeClass ?>"
+         title="Edit content for <?= htmlspecialchars($d['country_name']) ?>">
+        <span class="dest-pill-flag"><?= cms_dest_flag_svg($slugKey) ?></span>
+        <span class="dest-pill-name"><?= htmlspecialchars($cleanName) ?></span>
+        <?php if ($isActive): ?>
+          <span class="dest-pill-dot" aria-hidden="true" title="Currently active"></span>
+        <?php endif; ?>
+      </a>
+      <?php endforeach; ?>
+    </div>
+  </div>
 </div>
 
-<!-- Active Country Banner -->
-<div class="dest-header-bar">
-  <div class="dest-header-title">
-    <span class="dest-pill-code" style="width:28px;height:28px;font-size:12px;background:#ecfdf5;color:#16a34a;border:1px solid #bbf7d0;">
-      <?= $countryCodes[strtolower($activeDest['country_slug'])] ?? strtoupper(substr($activeDest['country_slug'], 0, 2)) ?>
-    </span>
-    <span>Editing: <strong><?= htmlspecialchars($activeDest['country_name']) ?></strong></span>
-    <span class="cms-badge cms-badge-accent">?country=<?= htmlspecialchars($activeDest['country_slug']) ?></span>
+<!-- Active Country Banner & Section Tabs Bar -->
+<div class="dest-header-card">
+  <!-- Active Country Header Top -->
+  <div class="dest-header-bar">
+    <div class="dest-header-title">
+      <span class="dest-header-flag">
+        <?= cms_dest_flag_svg(strtolower($activeDest['country_slug']), 32, 22) ?>
+      </span>
+      <div class="dest-header-text">
+        <span class="dest-header-kicker">Currently Editing Destination</span>
+        <div class="dest-header-heading">
+          <strong><?= htmlspecialchars($activeDest['country_name']) ?></strong>
+          <span class="cms-badge cms-badge-accent">?country=<?= htmlspecialchars($activeDest['country_slug']) ?></span>
+          <span class="dest-section-count">6 Sections</span>
+        </div>
+      </div>
+    </div>
+    <div class="dest-header-actions">
+      <a href="../../study-global.php?country=<?= htmlspecialchars($activeDest['country_slug']) ?>"
+         target="_blank" class="cms-btn cms-btn-secondary dest-preview-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <span>Preview Live Page</span>
+      </a>
+    </div>
   </div>
-  <div style="display:flex;gap:10px;align-items:center;">
-    <a href="../../study-global.php?country=<?= htmlspecialchars($activeDest['country_slug']) ?>"
-       target="_blank" class="cms-btn cms-btn-secondary">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      Preview Live Page
-    </a>
-  </div>
-</div>
 
-<!-- Quick Section Navigator -->
-<div class="dest-section-nav">
-  <a href="#sec-hero" class="dest-nav-chip">1. Hero</a>
-  <a href="#sec-about" class="dest-nav-chip">2. About / Potential</a>
-  <a href="#sec-features" class="dest-nav-chip">3. Why Choose Us</a>
-  <a href="#sec-testimonials" class="dest-nav-chip">4. Testimonials</a>
-  <a href="#sec-faq" class="dest-nav-chip">5. FAQ</a>
-  <a href="#sec-seo" class="dest-nav-chip">6. SEO Meta</a>
+  <!-- Navigation Underline Tabs with Left/Right Scroll Controls -->
+  <div class="dest-tabs-bar-outer">
+    <button type="button" class="dest-tabs-nav-btn dest-tabs-nav-prev" id="destTabsPrev" onclick="cmsScrollTabs('destTabsWrap', -1)" aria-label="Scroll tabs left" title="Scroll left">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="dest-tabs-wrap" id="destTabsWrap">
+      <ul class="dest-nav-tabs" role="tablist">
+        <li class="dest-tab-item">
+          <button type="button" class="dest-tab-btn active" data-sec="hero" onclick="switchDestTab('hero', this)">
+            <svg class="dest-tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+            <span class="dest-tab-label">1. Hero</span>
+          </button>
+        </li>
+        <li class="dest-tab-item">
+          <button type="button" class="dest-tab-btn" data-sec="about" onclick="switchDestTab('about', this)">
+            <svg class="dest-tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span class="dest-tab-label">2. About / Potential</span>
+          </button>
+        </li>
+        <li class="dest-tab-item">
+          <button type="button" class="dest-tab-btn" data-sec="features" onclick="switchDestTab('features', this)">
+            <svg class="dest-tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span class="dest-tab-label">3. Why Choose Us</span>
+          </button>
+        </li>
+        <li class="dest-tab-item">
+          <button type="button" class="dest-tab-btn" data-sec="testimonials" onclick="switchDestTab('testimonials', this)">
+            <svg class="dest-tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="dest-tab-label">4. Testimonials</span>
+          </button>
+        </li>
+        <li class="dest-tab-item">
+          <button type="button" class="dest-tab-btn" data-sec="faq" onclick="switchDestTab('faq', this)">
+            <svg class="dest-tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span class="dest-tab-label">5. FAQ</span>
+          </button>
+        </li>
+        <li class="dest-tab-item">
+          <button type="button" class="dest-tab-btn" data-sec="seo" onclick="switchDestTab('seo', this)">
+            <svg class="dest-tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span class="dest-tab-label">6. SEO Meta</span>
+          </button>
+        </li>
+        <li class="dest-tab-item dest-tab-item-all">
+          <button type="button" class="dest-tab-btn dest-tab-btn-all" data-sec="all" onclick="switchDestTab('all', this)" title="Show all sections together">
+            <svg class="dest-tab-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            <span class="dest-tab-label">All Sections</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+    <button type="button" class="dest-tabs-nav-btn dest-tabs-nav-next" id="destTabsNext" onclick="cmsScrollTabs('destTabsWrap', 1)" aria-label="Scroll tabs right" title="Scroll right">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════
@@ -225,7 +356,10 @@ require_once dirname(__DIR__) . '/includes/header.php';
       <div class="cms-card-title">1. Hero Section</div>
       <div class="cms-card-subtitle">Headline, fast facts card, call-to-actions, success rate, and visual campus image</div>
     </div>
-    <button class="cms-btn cms-btn-primary" onclick="saveDestSec('hero')">Save Hero</button>
+    <button type="button" class="cms-btn cms-btn-primary" onclick="saveDestSec('hero', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      <span>Save Hero</span>
+    </button>
   </div>
 
   <div class="cms-form-group">
@@ -236,10 +370,10 @@ require_once dirname(__DIR__) . '/includes/header.php';
 
   <div class="cms-form-group">
     <label class="cms-label">Subtitle Description</label>
-    <textarea class="cms-textarea cms-ckeditor" style="min-height:75px" data-dest="<?= $activeId ?>" data-section="hero" data-field="subtitle"><?= htmlspecialchars(fval($secData, 'hero', 'subtitle', 'Empowering students with world-class education, innovation, and global opportunities.')) ?></textarea>
+    <textarea class="cms-textarea cms-ckeditor cms-editor-sm" data-dest="<?= $activeId ?>" data-section="hero" data-field="subtitle"><?= htmlspecialchars(fval($secData, 'hero', 'subtitle', 'Empowering students with world-class education, innovation, and global opportunities.')) ?></textarea>
   </div>
 
-  <div class="cms-card-subtitle" style="margin: 16px 0 8px; font-weight:600; color:var(--text-primary);">Hero Right Side — Fast Facts Card (No Images)</div>
+  <div class="cms-section-divider">Hero Right Side — Fast Facts Card (No Images)</div>
   <div class="cms-input-row">
     <div class="cms-form-group">
       <label class="cms-label">Upcoming Intakes</label>
@@ -277,7 +411,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
     </div>
   </div>
 
-  <div class="cms-card-subtitle" style="margin: 16px 0 8px; font-weight:600; color:var(--text-primary);">Call To Action Buttons</div>
+  <div class="cms-section-divider">Call To Action Buttons</div>
   <div class="cms-input-row">
     <div class="cms-form-group">
       <label class="cms-label">Primary Button Label</label>
@@ -301,7 +435,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
     </div>
   </div>
 
-  <div class="cms-card-subtitle" style="margin: 16px 0 8px; font-weight:600; color:var(--text-primary);">Social Proof &amp; Statistics</div>
+  <div class="cms-section-divider">Social Proof &amp; Statistics</div>
   <div class="cms-input-row">
     <div class="cms-form-group">
       <label class="cms-label">Success Rate Figure</label>
@@ -325,7 +459,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
     </div>
   </div>
 
-  <div class="cms-card-subtitle" style="margin: 16px 0 8px; font-weight:600; color:var(--text-primary);">Hero Visual Image</div>
+  <div class="cms-section-divider">Hero Visual Image</div>
   <?php render_cms_image_upload('Main Campus Building Image', $activeId, 'hero', 'img_main', fval($secData, 'hero', 'img_main', 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80'), 'hero_main', 'Main campus / university visual displayed in hero section'); ?>
 </div>
 
@@ -338,7 +472,10 @@ require_once dirname(__DIR__) . '/includes/header.php';
       <div class="cms-card-title">2. About / Potential Section (Dark Green)</div>
       <div class="cms-card-subtitle">Founding narrative, graduate photos, and progress percentage statistics</div>
     </div>
-    <button class="cms-btn cms-btn-primary" onclick="saveDestSec('about')">Save About</button>
+    <button type="button" class="cms-btn cms-btn-primary" onclick="saveDestSec('about', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      <span>Save About</span>
+    </button>
   </div>
 
   <div class="cms-form-group">
@@ -349,10 +486,10 @@ require_once dirname(__DIR__) . '/includes/header.php';
 
   <div class="cms-form-group">
     <label class="cms-label">Narrative Paragraph</label>
-    <textarea class="cms-textarea cms-ckeditor" style="min-height:90px" data-dest="<?= $activeId ?>" data-section="about" data-field="desc"><?= htmlspecialchars(fval($secData, 'about', 'desc', 'Founded in 1999, NUOVA EDILE COSTANZA is a community - driven institution renowned for it\'s unique contributions.')) ?></textarea>
+    <textarea class="cms-textarea cms-ckeditor cms-editor-md" data-dest="<?= $activeId ?>" data-section="about" data-field="desc"><?= htmlspecialchars(fval($secData, 'about', 'desc', 'Founded in 1999, NUOVA EDILE COSTANZA is a community - driven institution renowned for it\'s unique contributions.')) ?></textarea>
   </div>
 
-  <div class="cms-card-subtitle" style="margin: 16px 0 8px; font-weight:600; color:var(--text-primary);">Progress Metrics</div>
+  <div class="cms-section-divider">Progress Metrics</div>
   <div class="cms-input-row">
     <div class="cms-form-group">
       <label class="cms-label">Stat 1 Percentage (e.g. 30%)</label>
@@ -376,7 +513,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
     </div>
   </div>
 
-  <div class="cms-card-subtitle" style="margin: 16px 0 8px; font-weight:600; color:var(--text-primary);">About Section Photos</div>
+  <div class="cms-section-divider">About Section Photos</div>
   <div class="cms-input-row">
     <?php render_cms_image_upload('Left Photo (Graduates holding diplomas)', $activeId, 'about', 'img_left', fval($secData, 'about', 'img_left', 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=80'), 'about_left', 'Graduation diploma photo'); ?>
     <?php render_cms_image_upload('Right Photo (Graduates tossing caps)', $activeId, 'about', 'img_right', fval($secData, 'about', 'img_right', 'https://images.unsplash.com/photo-1525921429624-479b6a26d84d?auto=format&fit=crop&w=900&q=80'), 'about_right', 'Celebration cap tossing photo'); ?>
@@ -392,7 +529,10 @@ require_once dirname(__DIR__) . '/includes/header.php';
       <div class="cms-card-title">3. Why Choose Us Section</div>
       <div class="cms-card-subtitle">Title, subtitle, and 3 feature cards</div>
     </div>
-    <button class="cms-btn cms-btn-primary" onclick="saveDestSec('features')">Save Why Choose Us</button>
+    <button type="button" class="cms-btn cms-btn-primary" onclick="saveDestSec('features', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      <span>Save Why Choose Us</span>
+    </button>
   </div>
 
   <div class="cms-form-group">
@@ -403,15 +543,15 @@ require_once dirname(__DIR__) . '/includes/header.php';
 
   <div class="cms-form-group">
     <label class="cms-label">Section Subtitle</label>
-    <textarea class="cms-textarea cms-ckeditor" style="min-height:75px" data-dest="<?= $activeId ?>" data-section="features" data-field="subtitle"><?= htmlspecialchars(fval($secData, 'features', 'subtitle', 'Home to students from every corner of the globe, fostering diversity, inclusion, and world-class academic excellence.')) ?></textarea>
+    <textarea class="cms-textarea cms-ckeditor cms-editor-sm" data-dest="<?= $activeId ?>" data-section="features" data-field="subtitle"><?= htmlspecialchars(fval($secData, 'features', 'subtitle', 'Home to students from every corner of the globe, fostering diversity, inclusion, and world-class academic excellence.')) ?></textarea>
   </div>
 
   <!-- Hidden JSON textarea synced automatically -->
-  <textarea id="ta_features" class="cms-repeater-hidden" style="display:none;"
+  <textarea id="ta_features" class="cms-repeater-hidden"
             data-dest="<?= $activeId ?>" data-section="features" data-field="cards_json"><?= htmlspecialchars(fjson($secData, 'features', 'cards_json', '[]')) ?></textarea>
 
-  <div class="cms-card-subtitle" style="margin: 20px 0 10px; display:flex; justify-content:space-between; align-items:center;">
-    <span style="font-weight:600; color:var(--text-primary);">Feature Cards List</span>
+  <div class="cms-repeater-header-bar">
+    <span class="cms-repeater-title">Feature Cards List</span>
     <button type="button" class="cms-btn cms-btn-secondary cms-btn-sm" onclick="addFeatureCard()">+ Add Feature Card</button>
   </div>
 
@@ -427,7 +567,10 @@ require_once dirname(__DIR__) . '/includes/header.php';
       <div class="cms-card-title">4. Voices From Our Global Community (Testimonials)</div>
       <div class="cms-card-subtitle">Manage top large featured cards and bottom student feedback cards</div>
     </div>
-    <button class="cms-btn cms-btn-primary" onclick="saveDestSec('testimonials')">Save Testimonials</button>
+    <button type="button" class="cms-btn cms-btn-primary" onclick="saveDestSec('testimonials', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      <span>Save Testimonials</span>
+    </button>
   </div>
 
   <div class="cms-form-group">
@@ -437,11 +580,11 @@ require_once dirname(__DIR__) . '/includes/header.php';
   </div>
 
   <!-- Hidden JSON textarea synced automatically -->
-  <textarea id="ta_testimonials" class="cms-repeater-hidden" style="display:none;"
+  <textarea id="ta_testimonials" class="cms-repeater-hidden"
             data-dest="<?= $activeId ?>" data-section="testimonials" data-field="cards_json"><?= htmlspecialchars(fjson($secData, 'testimonials', 'cards_json', '[]')) ?></textarea>
 
-  <div class="cms-card-subtitle" style="margin: 20px 0 10px; display:flex; justify-content:space-between; align-items:center;">
-    <span style="font-weight:600; color:var(--text-primary);">Testimonials Cards List</span>
+  <div class="cms-repeater-header-bar">
+    <span class="cms-repeater-title">Testimonials Cards List</span>
     <button type="button" class="cms-btn cms-btn-secondary cms-btn-sm" onclick="addTestimonialCard()">+ Add Testimonial</button>
   </div>
 
@@ -457,7 +600,10 @@ require_once dirname(__DIR__) . '/includes/header.php';
       <div class="cms-card-title">5. Frequently Asked Questions (FAQ)</div>
       <div class="cms-card-subtitle">Historic facade photo and interactive question accordion items</div>
     </div>
-    <button class="cms-btn cms-btn-primary" onclick="saveDestSec('faq')">Save FAQ</button>
+    <button type="button" class="cms-btn cms-btn-primary" onclick="saveDestSec('faq', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      <span>Save FAQ</span>
+    </button>
   </div>
 
   <div class="cms-form-group">
@@ -469,11 +615,11 @@ require_once dirname(__DIR__) . '/includes/header.php';
   <?php render_cms_image_upload('Left Facade Photo', $activeId, 'faq', 'img_url', fval($secData, 'faq', 'img_url', 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=900&q=80'), 'faq_img', 'Historic building or campus facade photo'); ?>
 
   <!-- Hidden JSON textarea synced automatically -->
-  <textarea id="ta_faq" class="cms-repeater-hidden" style="display:none;"
+  <textarea id="ta_faq" class="cms-repeater-hidden"
             data-dest="<?= $activeId ?>" data-section="faq" data-field="items_json"><?= htmlspecialchars(fjson($secData, 'faq', 'items_json', '[]')) ?></textarea>
 
-  <div class="cms-card-subtitle" style="margin: 20px 0 10px; display:flex; justify-content:space-between; align-items:center;">
-    <span style="font-weight:600; color:var(--text-primary);">FAQ Questions &amp; Answers List</span>
+  <div class="cms-repeater-header-bar">
+    <span class="cms-repeater-title">FAQ Questions &amp; Answers List</span>
     <button type="button" class="cms-btn cms-btn-secondary cms-btn-sm" onclick="addFaqItem()">+ Add FAQ Item</button>
   </div>
 
@@ -481,7 +627,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
 </div>
 
 <!-- ══════════════════════════════════════════════════════════
-     7. SEO META
+     6. SEO META
 ══════════════════════════════════════════════════════════ -->
 <div class="cms-card" id="sec-seo">
   <div class="cms-card-header">
@@ -489,7 +635,10 @@ require_once dirname(__DIR__) . '/includes/header.php';
       <div class="cms-card-title">6. Search Engine Optimization (SEO)</div>
       <div class="cms-card-subtitle">Search snippet title and description tags</div>
     </div>
-    <button class="cms-btn cms-btn-primary" onclick="saveDestSec('seo')">Save SEO</button>
+    <button type="button" class="cms-btn cms-btn-primary" onclick="saveDestSec('seo', this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      <span>Save SEO</span>
+    </button>
   </div>
 
   <div class="cms-form-group">
@@ -500,7 +649,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
 
   <div class="cms-form-group">
     <label class="cms-label">Meta Description</label>
-    <textarea class="cms-textarea" style="min-height:70px" data-dest="<?= $activeId ?>" data-section="seo" data-field="description"><?= htmlspecialchars(fval($secData, 'seo', 'description', "Complete guide to studying in {$activeDest['country_name']} with Visabuz.")) ?></textarea>
+    <textarea class="cms-textarea cms-textarea-sm" data-dest="<?= $activeId ?>" data-section="seo" data-field="description"><?= htmlspecialchars(fval($secData, 'seo', 'description', "Complete guide to studying in {$activeDest['country_name']} with Visabuz.")) ?></textarea>
   </div>
 </div>
 
@@ -603,18 +752,18 @@ function renderFeatures() {
         return;
     }
     c.innerHTML = items.map((it, idx) => `
-        <div class="cms-repeater-item" data-idx="${idx}">
+        <div class="cms-repeater-item ${it.is_featured ? 'is-featured' : ''}" data-idx="${idx}">
           <div class="cms-repeater-item-header">
             <span class="cms-repeater-item-badge">
               <span class="cms-badge ${it.is_featured ? 'cms-badge-accent' : 'cms-badge-green'}">#${idx + 1}</span>
               <strong>${escapeHtml(it.title || 'Feature Card')}</strong>
-              ${it.is_featured ? '<span class="cms-badge cms-badge-accent" style="margin-left:6px;">Featured</span>' : ''}
+              ${it.is_featured ? '<span class="cms-badge cms-badge-accent ms-1">Featured</span>' : ''}
             </span>
             <button type="button" class="cms-repeater-delete-btn" onclick="deleteRepeaterItem('features', ${idx})">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Remove
             </button>
           </div>
-          <div class="cms-input-row" style="grid-template-columns: 140px 1.5fr 1fr;">
+          <div class="cms-input-row cms-grid-feature-top">
             <div class="cms-form-group">
               <label class="cms-label">Icon Type</label>
               <select class="cms-select" onchange="repeaters.features[${idx}].icon = this.value; syncRepeaterToTextarea('features');">
@@ -628,17 +777,17 @@ function renderFeatures() {
               <input type="text" class="cms-input" value="${escapeHtml(it.title || '')}" placeholder="e.g. Inspiring Student Life"
                      oninput="repeaters.features[${idx}].title = this.value; syncRepeaterToTextarea('features');" />
             </div>
-            <div class="cms-form-group" style="display:flex; align-items:center; gap:8px; padding-top:24px;">
-              <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:500;">
+            <div class="cms-form-group cms-checkbox-group">
+              <label class="cms-checkbox-label">
                 <input type="checkbox" ${it.is_featured ? 'checked' : ''}
                        onchange="repeaters.features[${idx}].is_featured = this.checked; syncRepeaterToTextarea('features'); renderFeatures();" />
-                Featured (Dark Border)
+                <span>Featured (Dark Border)</span>
               </label>
             </div>
           </div>
           <div class="cms-form-group">
             <label class="cms-label">Description Text</label>
-            <textarea class="cms-textarea" style="min-height:55px;" placeholder="Brief description..."
+            <textarea class="cms-textarea cms-textarea-sm" placeholder="Brief description..."
                       oninput="repeaters.features[${idx}].desc = this.value; syncRepeaterToTextarea('features');">${escapeHtml(it.desc || '')}</textarea>
           </div>
           <div class="cms-input-row">
@@ -680,56 +829,56 @@ function renderTestimonials() {
         return;
     }
     c.innerHTML = items.map((it, idx) => `
-        <div class="cms-repeater-item" data-idx="${idx}">
+        <div class="cms-repeater-item ${it.is_featured ? 'is-featured' : ''}" data-idx="${idx}">
           <div class="cms-repeater-item-header">
             <span class="cms-repeater-item-badge">
               <span class="cms-badge ${it.is_featured ? 'cms-badge-accent' : 'cms-badge-green'}">#${idx + 1}</span>
               <strong>${escapeHtml(it.title || it.author_name || 'Testimonial')}</strong>
-              ${it.is_featured ? '<span class="cms-badge cms-badge-accent" style="margin-left:6px;">Featured (Dark Green)</span>' : ''}
+              ${it.is_featured ? '<span class="cms-badge cms-badge-accent ms-1">Featured (Dark Green)</span>' : ''}
             </span>
             <button type="button" class="cms-repeater-delete-btn" onclick="deleteRepeaterItem('testimonials', ${idx})">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Remove
             </button>
           </div>
-          <div class="cms-input-row" style="grid-template-columns: 1.5fr 1fr;">
+          <div class="cms-input-row cms-grid-testi-top">
             <div class="cms-form-group">
               <label class="cms-label">Card Title / Summary</label>
               <input type="text" class="cms-input" value="${escapeHtml(it.title || '')}" placeholder="e.g. A Truly Global Learning Experience"
                      oninput="repeaters.testimonials[${idx}].title = this.value; syncRepeaterToTextarea('testimonials');" />
             </div>
-            <div class="cms-form-group" style="display:flex; align-items:center; gap:8px; padding-top:24px;">
-              <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:500;">
+            <div class="cms-form-group cms-checkbox-group">
+              <label class="cms-checkbox-label">
                 <input type="checkbox" ${it.is_featured ? 'checked' : ''}
                        onchange="repeaters.testimonials[${idx}].is_featured = this.checked; syncRepeaterToTextarea('testimonials'); renderTestimonials();" />
-                Featured (Dark Green Card)
+                <span>Featured (Dark Green Card)</span>
               </label>
             </div>
           </div>
           <div class="cms-form-group">
             <label class="cms-label">Quote Body</label>
-            <textarea class="cms-textarea" style="min-height:60px;" placeholder="What did the student say?"
+            <textarea class="cms-textarea cms-textarea-sm" placeholder="What did the student say?"
                       oninput="repeaters.testimonials[${idx}].quote = this.value; syncRepeaterToTextarea('testimonials');">${escapeHtml(it.quote || '')}</textarea>
           </div>
-          <div class="cms-input-row" style="grid-template-columns: 1fr 1.5fr; align-items:flex-end;">
-            <div class="cms-form-group" style="margin-bottom:0;">
+          <div class="cms-input-row cms-grid-testi-meta">
+            <div class="cms-form-group mb-0">
               <label class="cms-label">Author Name</label>
               <input type="text" class="cms-input" value="${escapeHtml(it.author_name || '')}" placeholder="e.g. Leslie Alexander"
                      oninput="repeaters.testimonials[${idx}].author_name = this.value; syncRepeaterToTextarea('testimonials');" />
             </div>
-            <div class="cms-form-group" style="margin-bottom:0;">
+            <div class="cms-form-group mb-0">
               <label class="cms-label">Author Photo</label>
-              <div class="cms-image-upload-wrap" style="padding:6px 12px; min-height:50px;">
-                <div class="cms-image-preview-box is-avatar" style="width:40px; height:40px;">
-                  <img src="${escapeHtml(resolvePreviewUrl(it.author_avatar || ''))}" alt="Avatar" style="${it.author_avatar ? 'display:block;' : 'display:none;'}" />
-                  <div class="cms-upload-empty" style="${!it.author_avatar ? 'display:block;' : 'display:none; font-size:10px;'}">No Img</div>
+              <div class="cms-image-upload-wrap cms-upload-wrap-compact">
+                <div class="cms-image-preview-box is-avatar cms-avatar-preview">
+                  <img src="${escapeHtml(resolvePreviewUrl(it.author_avatar || ''))}" alt="Avatar" class="cms-preview-img ${it.author_avatar ? 'is-visible' : 'is-hidden'}" />
+                  <div class="cms-upload-empty cms-upload-empty-xs ${!it.author_avatar ? 'is-visible' : 'is-hidden'}">No Img</div>
                 </div>
-                <div class="cms-upload-actions" style="gap:8px;">
-                  <label class="cms-upload-btn" style="padding:5px 12px; font-size:12px;">
+                <div class="cms-upload-actions cms-upload-actions-compact">
+                  <label class="cms-upload-btn cms-upload-btn-sm">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     <span>${it.author_avatar ? 'Change Photo' : 'Upload Photo'}</span>
-                    <input type="file" accept="image/*" style="display:none;" onchange="uploadTestimonialAvatar(this, ${idx})" />
+                    <input type="file" accept="image/*" class="cms-file-input-hidden" onchange="uploadTestimonialAvatar(this, ${idx})" />
                   </label>
-                  ${it.author_avatar ? `<button type="button" class="cms-remove-img-btn" style="padding:5px 10px; font-size:11px;" onclick="removeTestimonialAvatar(${idx})">Remove</button>` : ''}
+                  ${it.author_avatar ? `<button type="button" class="cms-remove-img-btn cms-remove-img-btn-sm" onclick="removeTestimonialAvatar(${idx})">Remove</button>` : ''}
                 </div>
               </div>
             </div>
@@ -776,9 +925,9 @@ function renderFaq() {
             <input type="text" class="cms-input" value="${escapeHtml(it.question || '')}" placeholder="What programs does the university offer?"
                    oninput="repeaters.faq[${idx}].question = this.value; syncRepeaterToTextarea('faq');" />
           </div>
-          <div class="cms-form-group" style="margin-bottom:0;">
+          <div class="cms-form-group mb-0">
             <label class="cms-label">Answer</label>
-            <textarea class="cms-textarea" style="min-height:65px;" placeholder="Detailed answer..."
+            <textarea class="cms-textarea cms-textarea-sm" placeholder="Detailed answer..."
                       oninput="repeaters.faq[${idx}].answer = this.value; syncRepeaterToTextarea('faq');">${escapeHtml(it.answer || '')}</textarea>
           </div>
         </div>
@@ -798,8 +947,8 @@ function addFaqItem() {
 document.addEventListener('DOMContentLoaded', renderAllRepeaters);
 renderAllRepeaters();
 
-// ── Save Section Handler ─────────────────────────────────────
-async function saveDestSec(section) {
+// ── Save Section Handler with Enhanced Feedback ──────────────
+async function saveDestSec(section, btn) {
     window.cmsSyncEditors?.();
     syncAllRepeaters();
 
@@ -809,6 +958,13 @@ async function saveDestSec(section) {
     document.querySelectorAll(`[data-dest="${destId}"][data-section="${section}"]`).forEach(el => {
         fields[el.dataset.field] = el.value;
     });
+
+    const origBtnHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.classList.add('is-saving');
+        btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cms-spin"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg> <span>Saving...</span>';
+    }
 
     const data = new FormData();
     data.append('_csrf', CMS_CSRF);
@@ -824,14 +980,121 @@ async function saveDestSec(section) {
         const json = await res.json();
         if (json.ok) {
             Toast.success(`Section "${section}" saved successfully!`);
+            if (btn) {
+                btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> <span>Saved!</span>';
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('is-saving');
+                    btn.innerHTML = origBtnHtml;
+                }, 1400);
+            }
         } else {
             Toast.error(json.error ?? 'Save failed.');
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('is-saving');
+                btn.innerHTML = origBtnHtml;
+            }
         }
     } catch (err) {
         Toast.error('Network error during save.');
         console.error(err);
+        if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('is-saving');
+            btn.innerHTML = origBtnHtml;
+        }
     }
 }
+
+// ── Section Tabs Switcher & State ────────────────────────────
+function cmsScrollTabs(wrapOrId, dir) {
+    const wrap = typeof wrapOrId === 'string' ? document.getElementById(wrapOrId) : wrapOrId;
+    if (!wrap) return;
+    const amount = (dir || 1) * 280;
+    wrap.scrollLeft += amount;
+}
+window.cmsScrollTabs = cmsScrollTabs;
+
+function switchDestTab(secName, btn) {
+    document.querySelectorAll('.dest-tab-btn').forEach(b => b.classList.remove('active'));
+    const activeBtn = btn || document.querySelector(`.dest-tab-btn[data-sec="${secName}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+        if (typeof activeBtn.scrollIntoView === 'function') {
+            activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+        }
+    }
+
+    const sections = ['hero', 'about', 'features', 'testimonials', 'faq', 'seo'];
+    if (secName === 'all') {
+        sections.forEach(s => {
+            const el = document.getElementById(`sec-${s}`);
+            if (el) el.style.display = 'block';
+        });
+    } else {
+        sections.forEach(s => {
+            const el = document.getElementById(`sec-${s}`);
+            if (el) {
+                el.style.display = (s === secName) ? 'block' : 'none';
+            }
+        });
+    }
+
+    // Update URL hash without causing a page jump
+    if (history.replaceState) {
+        history.replaceState(null, '', secName === 'all' ? '#all' : `#sec-${secName}`);
+    }
+
+    // Trigger window resize so CKEditor & repeaters refresh smoothly
+    window.dispatchEvent(new Event('resize'));
+
+    // Scroll up smoothly if user is scrolled past tabs
+    const headerCard = document.querySelector('.dest-header-card');
+    if (headerCard) {
+        const topPos = headerCard.getBoundingClientRect().top + window.scrollY - 10;
+        if (window.scrollY > topPos + 80) {
+            window.scrollTo({ top: topPos, behavior: 'smooth' });
+        }
+    }
+}
+
+// ── Tab ScrollSpy in "All Sections" Mode ──────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    const sections = ['sec-hero', 'sec-about', 'sec-features', 'sec-testimonials', 'sec-faq', 'sec-seo'].map(id => document.getElementById(id)).filter(Boolean);
+
+    window.addEventListener('scroll', () => {
+        const allBtn = document.querySelector('.dest-tab-btn[data-sec="all"]');
+        if (!allBtn || !allBtn.classList.contains('active')) return;
+
+        const scrollPos = window.scrollY + 130;
+        let currentSec = sections[0];
+        for (const sec of sections) {
+            if (sec.offsetTop <= scrollPos) {
+                currentSec = sec;
+            }
+        }
+        if (currentSec) {
+            const secKey = currentSec.id.replace('sec-', '');
+            document.querySelectorAll('.dest-tab-btn').forEach(btn => {
+                if (btn.dataset.sec === secKey) {
+                    btn.classList.add('is-scrolled-active');
+                } else {
+                    btn.classList.remove('is-scrolled-active');
+                }
+            });
+        }
+    }, { passive: true });
+
+    // Handle deep-link / URL hash on page load
+    const hash = (window.location.hash || '').replace('#sec-', '').replace('#', '');
+    const valid = ['hero', 'about', 'features', 'testimonials', 'faq', 'seo', 'all'];
+    const initialSec = valid.includes(hash) ? hash : 'hero';
+    const targetBtn = document.querySelector(`.dest-tab-btn[data-sec="${initialSec}"]`);
+    if (targetBtn) {
+        switchDestTab(initialSec, targetBtn);
+    }
+});
 </script>
 
 <?php require_once dirname(__DIR__) . '/includes/footer.php'; ?>

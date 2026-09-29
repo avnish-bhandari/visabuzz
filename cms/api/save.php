@@ -81,7 +81,25 @@ if ($action === 'upload_image') {
         respond(false, 'File is too large. Maximum size is 12MB.');
     }
 
-    $uploadDir = dirname(dirname(__DIR__)) . '/uploads';
+    // Determine subfolder inside cms/uploads
+    $folder = trim($_POST['folder'] ?? $_GET['folder'] ?? '');
+    if (!$folder) {
+        $page = trim($_POST['page_slug'] ?? $_POST['page'] ?? '');
+        if ($page === 'home' || $page === '') {
+            $folder = 'home page';
+        } else {
+            $folder = $page;
+        }
+    }
+
+    $folder = str_replace(['..', '\\', '/', "\0"], '', $folder);
+    $folder = trim(preg_replace('/[^\w\s\.-]/u', '', $folder));
+    if ($folder === '') {
+        $folder = 'home page';
+    }
+
+    $baseUploadDir = dirname(__DIR__) . '/uploads';
+    $uploadDir = $baseUploadDir . '/' . $folder;
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);
     }
@@ -95,9 +113,12 @@ if ($action === 'upload_image') {
         respond(false, 'Failed to save uploaded image.');
     }
 
+    $relativeUrl = 'cms/uploads/' . $folder . '/' . $filename;
+
     respond(true, 'Image uploaded successfully.', [
-        'url'      => 'uploads/' . $filename,
+        'url'      => $relativeUrl,
         'filename' => $filename,
+        'folder'   => $folder,
     ]);
 }
 

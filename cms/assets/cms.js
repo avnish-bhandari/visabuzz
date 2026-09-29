@@ -31,7 +31,8 @@ const Toast = (() => {
             info:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
         };
         const icon = icons[type] || icons.info;
-        el.innerHTML = `<span class="cms-toast-icon">${icon}</span><span style="font-weight:500">${type === 'success' ? 'Well done!' : (type === 'error' ? 'Oh snap!' : '')}</span> <span>${message}</span>`;
+        const prefix = type === 'success' ? 'Well done!' : (type === 'error' ? 'Oh snap!' : '');
+        el.innerHTML = `<span class="cms-toast-icon">${icon}</span><span class="cms-toast-body">${prefix ? `<strong class="cms-toast-title">${prefix}</strong> ` : ''}<span class="cms-toast-msg">${message}</span></span>`;
         getContainer().appendChild(el);
 
         setTimeout(() => {
@@ -316,7 +317,7 @@ if (typeof Sortable !== 'undefined') {
 })();
 
 // ── Global Image Upload & Preview Helper ────────────────────
-window.cmsUploadFile = async function (input, targetInputOrId, previewImgOrId, callback) {
+window.cmsUploadFile = async function (input, targetInputOrId, previewImgOrId, callback, customFolder) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
 
@@ -345,6 +346,10 @@ window.cmsUploadFile = async function (input, targetInputOrId, previewImgOrId, c
     data.append('action', 'upload_image');
     data.append('image', file);
 
+    const folder = customFolder || input.dataset.folder || window.CMS_PAGE_FOLDER || window.CMS_PAGE_SLUG || 'home page';
+    data.append('folder', folder);
+    data.append('page_slug', window.CMS_PAGE_SLUG || 'home');
+
     const apiSaveUrl = window.CMS_API_SAVE || '../api/save.php';
 
     try {
@@ -357,9 +362,15 @@ window.cmsUploadFile = async function (input, targetInputOrId, previewImgOrId, c
                 targetInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
             if (previewImg) {
-                const previewSrc = (json.url.startsWith('http') || json.url.startsWith('/') || json.url.startsWith('data:'))
-                    ? json.url
-                    : (window.CMS_SITE_ROOT || '../../') + json.url;
+                let previewSrc = json.url;
+                if (!json.url.startsWith('http') && !json.url.startsWith('/') && !json.url.startsWith('data:')) {
+                    if (json.url.startsWith('cms/')) {
+                        const rootPrefix = typeof window.CMS_ROOT !== 'undefined' ? window.CMS_ROOT : '../';
+                        previewSrc = rootPrefix + json.url.substring(4);
+                    } else {
+                        previewSrc = (window.CMS_SITE_ROOT || '../../') + json.url;
+                    }
+                }
                 previewImg.src = previewSrc;
                 previewImg.style.display = 'block';
                 const emptyEl = previewImg.parentElement?.querySelector('.cms-upload-empty');
@@ -410,4 +421,86 @@ window.cmsRemoveImage = function (targetInputOrId, previewImgOrId, callback) {
     }
     Toast.info('Image removed.');
 };
+
+// ── Universal CMS Tab Scroller & Mouse Scroll Navigation ─────
+window.cmsScrollTabs = function (wrapOrId, dir) {
+    var wrap = typeof wrapOrId === 'string' ? document.getElementById(wrapOrId) : wrapOrId;
+    if (!wrap && wrapOrId && wrapOrId.closest) {
+        var outer = wrapOrId.closest('.dest-tabs-bar-outer') || wrapOrId.parentElement;
+        wrap = outer ? outer.querySelector('.dest-tabs-wrap') : null;
+    }
+    if (!wrap) wrap = document.querySelector('.dest-tabs-wrap');
+    if (!wrap) return;
+
+    var step = (dir || 1) * 280;
+    wrap.scrollLeft += step;
+};
+
+window.initCmsTabsScroller = function () {
+    document.querySelectorAll('.dest-tabs-wrap').forEach(wrap => {
+        if (wrap.dataset.scrollerInit === 'true') return;
+        wrap.dataset.scrollerInit = 'true';
+
+        const outer = wrap.closest('.dest-tabs-bar-outer');
+        const prevBtn = outer?.querySelector('.dest-tabs-nav-prev');
+        const nextBtn = outer?.querySelector('.dest-tabs-nav-next');
+
+        function updateButtons() {
+            if (!wrap) return;
+            const maxScroll = Math.max(0, wrap.scrollWidth - wrap.clientWidth);
+            const atStart = wrap.scrollLeft <= 5;
+            const atEnd = wrap.scrollLeft >= maxScroll - 5;
+
+            if (prevBtn) {
+                prevBtn.classList.toggle('is-disabled', atStart);
+            }
+            if (nextBtn) {
+                nextBtn.classList.toggle('is-disabled', atEnd);
+            }
+        }
+
+        if (prevBtn && !prevBtn.hasAttribute('onclick')) {
+            prevBtn.onclick = function (e) {
+                e.preventDefault();
+                window.cmsScrollTabs(wrap, -1);
+                setTimeout(updateButtons, 180);
+            };
+        }
+
+        if (nextBtn && !nextBtn.hasAttribute('onclick')) {
+            nextBtn.onclick = function (e) {
+                e.preventDefault();
+                window.cmsScrollTabs(wrap, 1);
+                setTimeout(updateButtons, 180);
+            };
+        }
+
+        // Mouse-wheel horizontal scroll
+        wrap.addEventListener('wheel', function (e) {
+            if (wrap.scrollWidth <= wrap.clientWidth) return;
+            const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+            if (delta !== 0) {
+                e.preventDefault();
+                wrap.scrollLeft += (delta > 0 ? 140 : -140);
+                updateButtons();
+            }
+        }, { passive: false });
+
+        wrap.addEventListener('scroll', updateButtons, { passive: true });
+        window.addEventListener('resize', updateButtons, { passive: true });
+
+        updateButtons();
+        setTimeout(updateButtons, 150);
+        setTimeout(updateButtons, 600);
+    });
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', window.initCmsTabsScroller);
+} else {
+    window.initCmsTabsScroller();
+}
+window.addEventListener('load', window.initCmsTabsScroller);
+
+
 
